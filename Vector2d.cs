@@ -39,7 +39,7 @@ namespace AAI_MonogameAssignment
             return this;
         }
 
-        public Vector2D divide(float value)
+        public Vector2D Divide(float value)
         {
             this.X /= value;
             this.Y /= value;
@@ -78,7 +78,7 @@ namespace AAI_MonogameAssignment
         }
 
         // maximale snelheid limiteren
-        public Vector2D truncate(float maX)
+        public Vector2D Truncate(float maX)
         {
             if (Length() > maX)
             {
@@ -90,14 +90,14 @@ namespace AAI_MonogameAssignment
 
         // Hulpfunctie voor steering ------------------------------------------------------------------------------------
 
-        // Checkt of 2 vectoren dezlefde kan op wijzen, handig voor "obstacle avoidance"
+        // Checkt of 2 vectoren dezelfde kan op wijzen, handig voor "obstacle avoidance"
         public float Dot(Vector2D other)
         {
             return X * other.X + Y * other.Y;
         }
 
         // geeft een vector terug die 90 graden gedraaid is, handig om te checken of iets links of rechts van de entity is
-        public Vector2D Perpendicular()
+        public Vector2D GetSide()
         {
             return new Vector2D(-Y, X);
         }

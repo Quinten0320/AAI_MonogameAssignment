@@ -21,7 +21,7 @@ namespace Project.Entities.BaseEntity
             Radius = radius;
         }
 
-        public abstract void Update(float delta);
+        public abstract void Update(float deltaTime);
         public abstract void Render(SpriteBatch spriteBatch);
         public abstract void RenderDebug(SpriteBatch spriteBatch);
         public bool Overlaps(BaseGameEntity otherEntity)
