@@ -39,7 +39,7 @@ namespace AAI_MonogameAssignment
             return this;
         }
 
-        public Vector2D divide(float value)
+        public Vector2D Divide(float value)
         {
             this.X /= value;
             this.Y /= value;
@@ -78,7 +78,7 @@ namespace AAI_MonogameAssignment
         }
 
         // maximale snelheid limiteren
-        public Vector2D truncate(float maX)
+        public Vector2D Truncate(float maX)
         {
             if (Length() > maX)
             {
