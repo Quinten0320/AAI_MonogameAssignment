@@ -57,6 +57,20 @@ public class DungeonMap
         return MapData[row, col] == 1;
     }
 
+    public bool CollidesWithWall(float x, float y, float radius)
+    {
+        int leftCol = (int)((x - radius) / TileSize);
+        int rightCol = (int)((x + radius - 0.001f) / TileSize);
+        int topRow = (int)((y - radius) / TileSize);
+        int bottomRow = (int)((y + radius - 0.001f) / TileSize);
+
+        for (int row = topRow; row <= bottomRow; row++)
+            for (int col = leftCol; col <= rightCol; col++)
+                if (IsWall(col, row)) return true;
+
+        return false;
+    }
+
     private static Texture2D CreateTexture(GraphicsDevice gd, Color color)
     {
         var tex = new Texture2D(gd, 1, 1);
