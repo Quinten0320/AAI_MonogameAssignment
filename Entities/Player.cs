@@ -10,10 +10,14 @@ namespace Project.Entities;
 public class Player : BaseGameEntity
 {
     private const float Speed = 150f;
-
+    private const float DebugLineLength = 50f;
+    private const float DamageCooldownTime = 1f;
+    public int HP { get; set; } = 100;
     private readonly Texture2D _sprite;
     private readonly DungeonMap _map;
     private float _rotation;
+    private float _damageCooldown;
+    private Vector2D _lastDirection = new Vector2D(0, -1);
 
     public Player(Vector2D pos, GameWorld world, Texture2D sprite, DungeonMap map)
         : base(pos, world)
@@ -22,8 +26,20 @@ public class Player : BaseGameEntity
         _map = map;
     }
 
+    public bool TryTakeDamage(int amount)
+    {
+        if (_damageCooldown > 0) return false;
+        HP -= amount;
+        if (HP < 0) HP = 0;
+        _damageCooldown = DamageCooldownTime;
+        return true;
+    }
+
     public override void Update(float delta)
     {
+        if (_damageCooldown > 0)
+            _damageCooldown -= delta;
+
         var state = Keyboard.GetState();
         var direction = new Vector2D();
 
@@ -35,6 +51,7 @@ public class Player : BaseGameEntity
         if (direction.IsZero()) return;
 
         direction.Normalize();
+        _lastDirection = direction.Clone();
 
         _rotation = MathF.Atan2(direction.Y, direction.X) + MathHelper.PiOver2;
 
@@ -54,5 +71,9 @@ public class Player : BaseGameEntity
         spriteBatch.Draw(_sprite, Pos.ToXna(), null, Color.White, _rotation, origin, 1f, SpriteEffects.None, 0f);
     }
 
-    public override void RenderDebug(SpriteBatch spriteBatch) { }
+    public override void RenderDebug(SpriteBatch spriteBatch)
+    {
+        Vector2D end = Pos.Clone().Add(_lastDirection.Clone().Multiply(DebugLineLength));
+        DebugDrawer.DrawLine(spriteBatch, Pos, end, Color.Yellow);
+    }
 }
