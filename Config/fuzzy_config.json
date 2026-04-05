@@ -1,0 +1,36 @@
+{
+  "variables": {
+    "Distance": {
+      "sets": {
+        "Close":  { "type": "Trapezoid", "points": [0, 0, 48, 112] },
+        "Medium": { "type": "Triangle",  "points": [80, 160, 240] },
+        "Far":    { "type": "Trapezoid", "points": [200, 260, 320, 320] }
+      }
+    },
+    "Health": {
+      "sets": {
+        "Low":    { "type": "Trapezoid", "points": [0, 0, 15, 35] },
+        "Medium": { "type": "Triangle",  "points": [20, 50, 80] },
+        "High":   { "type": "Trapezoid", "points": [65, 85, 100, 100] }
+      }
+    },
+    "Aggression": {
+      "sets": {
+        "Retreat":    { "type": "Trapezoid", "points": [0, 0, 15, 35] },
+        "Cautious":   { "type": "Triangle",  "points": [25, 50, 75] },
+        "Aggressive": { "type": "Trapezoid", "points": [65, 85, 100, 100] }
+      }
+    }
+  },
+  "rules": [
+    { "antecedents": { "Distance": "Close",  "Health": "Low" },    "consequent": { "Aggression": "Retreat" } },
+    { "antecedents": { "Distance": "Close",  "Health": "Medium" }, "consequent": { "Aggression": "Cautious" } },
+    { "antecedents": { "Distance": "Close",  "Health": "High" },   "consequent": { "Aggression": "Aggressive" } },
+    { "antecedents": { "Distance": "Medium", "Health": "Low" },    "consequent": { "Aggression": "Retreat" } },
+    { "antecedents": { "Distance": "Medium", "Health": "Medium" }, "consequent": { "Aggression": "Cautious" } },
+    { "antecedents": { "Distance": "Medium", "Health": "High" },   "consequent": { "Aggression": "Aggressive" } },
+    { "antecedents": { "Distance": "Far",    "Health": "Low" },    "consequent": { "Aggression": "Cautious" } },
+    { "antecedents": { "Distance": "Far",    "Health": "Medium" }, "consequent": { "Aggression": "Cautious" } },
+    { "antecedents": { "Distance": "Far",    "Health": "High" },   "consequent": { "Aggression": "Cautious" } }
+  ]
+}
