@@ -16,7 +16,6 @@ namespace Project.Scenes
         private GraphicsDevice _graphicsDevice;
         private DungeonMap _dungeonMap;
         private NavGraph _navGraph;
-        private GameWorld _world;
         private Player _player;
         private readonly List<Skeleton> _skeletons = new List<Skeleton>();
         private readonly List<Projectile> _projectiles = new List<Projectile>();
@@ -62,13 +61,12 @@ namespace Project.Scenes
 
             var wizardTexture = Texture2D.FromFile(graphicsDevice, "ModelSprites/Wizard.png");
             _navGraph = new NavGraph(_dungeonMap);
-            _world = new GameWorld();
 
             _fuzzyEngine = FuzzyEngine.LoadFromJson("Config/fuzzy_config.json");
 
             _player = new Player(
                 new Vector2D(1.5f * DungeonMap.TileSize, 1.5f * DungeonMap.TileSize),
-                _world, wizardTexture, _dungeonMap
+                wizardTexture, _dungeonMap
             );
 
             int btnSize = 28;
@@ -149,7 +147,7 @@ namespace Project.Scenes
 
                 var direction = new Vector2D(mouseState.X, mouseState.Y).Sub(_player.Pos);
                 if (!direction.IsZero())
-                    _projectiles.Add(new Projectile(_player.Pos.Clone(), direction, _world, _dungeonMap, _projectileTexture));
+                    _projectiles.Add(new Projectile(_player.Pos.Clone(), direction, _dungeonMap, _projectileTexture));
             }
             _previousMouseState = mouseState;
         }
@@ -202,7 +200,7 @@ namespace Project.Scenes
             {
                 var spawnPos = SpawnPoints[i % SpawnPoints.Length].Clone();
                 var sm = ScriptedStateMachine.LoadFromJson("Config/state_machine.json");
-                _skeletons.Add(new Skeleton(spawnPos, _world, _player, _dungeonMap, _navGraph,
+                _skeletons.Add(new Skeleton(spawnPos, _player, _dungeonMap, _navGraph,
                     _graphicsDevice, sm, _fuzzyEngine));
             }
         }

@@ -14,8 +14,8 @@ namespace Project.Entities
         private readonly Texture2D _texture;
         private readonly DungeonMap _map;
 
-        public Projectile(Vector2D pos, Vector2D direction, GameWorld world, DungeonMap map, Texture2D texture)
-            : base(pos, world, radius: Size / 2f)
+        public Projectile(Vector2D pos, Vector2D direction, DungeonMap map, Texture2D texture)
+            : base(pos, radius: Size / 2f)
         {
             _velocity = direction.Clone().Normalize().Multiply(Speed);
             _texture = texture;

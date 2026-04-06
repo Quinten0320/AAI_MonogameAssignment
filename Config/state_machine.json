@@ -4,13 +4,16 @@
   "states": {
     "Wander": { "steering": "Wander", "speed": 50 },
     "Seek":   { "steering": "Seek",   "speed": 120 },
-    "Flee":   { "steering": "Flee",   "speed": 120 }
+    "Flee":   { "steering": "Flee",   "speed": 120 },
+    "Hide":   { "steering": "Hide",   "speed": 100 }
   },
   "transitions": [
     { "from": "Wander", "to": "Seek", "conditions": ["playerInRange", "aggressionAbove:67"] },
-    { "from": "Wander", "to": "Flee", "conditions": ["playerInRange", "aggressionBelow:33"] },
-    { "from": "Seek",   "to": "Flee", "conditions": ["aggressionBelow:33"] },
+    { "from": "Wander", "to": "Hide", "conditions": ["playerInRange", "aggressionBelow:33"] },
+    { "from": "Seek",   "to": "Hide", "conditions": ["aggressionBelow:33"] },
     { "from": "Seek",   "to": "Wander", "conditions": ["playerOutOfRange"] },
+    { "from": "Hide",   "to": "Wander", "conditions": ["playerOutOfRange"] },
+    { "from": "Hide",   "to": "Seek", "conditions": ["playerInRange", "aggressionAbove:67"] },
     { "from": "Flee",   "to": "Wander", "conditions": ["playerOutOfRange"] },
     { "from": "Flee",   "to": "Seek", "conditions": ["playerInRange", "aggressionAbove:67"] }
   ]

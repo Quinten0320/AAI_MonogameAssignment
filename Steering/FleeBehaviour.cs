@@ -8,14 +8,14 @@ namespace Project.Steering
 {
     public class FleeBehaviour : SteeringBehaviour
     {
-        private readonly Vector2D _target; //player
+        private readonly Vector2D _target;
         private readonly NavGraph _navGraph;
 
         private List<NodeBase> _path;
         private int _pathIndex;
         private NodeBase _lastEntityNode;
         private const float WaypointReachedDist = 12f;
-        private const int FleeDistance = 5; //tiles away from player
+        private const int FleeDistance = 5;
 
         public FleeBehaviour(Vector2D target, NavGraph navGraph)
         {
@@ -40,20 +40,18 @@ namespace Project.Steering
                 }
             }
 
-            //waypoints
             if (_path != null && _pathIndex < _path.Count)
             {
                 while (_pathIndex < _path.Count &&
-                       entity.Pos.DistanceTo(NodeWorldPos(_path[_pathIndex])) < WaypointReachedDist)
+                       entity.Pos.DistanceTo(_path[_pathIndex].WorldPos) < WaypointReachedDist)
                 {
                     _pathIndex++;
                 }
 
                 if (_pathIndex < _path.Count)
-                    return SeekToward(entity, NodeWorldPos(_path[_pathIndex]));
+                    return SeekToward(entity, _path[_pathIndex].WorldPos);
             }
 
-            //fallback
             Vector2D desired = entity.Pos.Clone().Sub(_target).Normalize().Multiply(entity.MaxSpeed);
             return desired.Sub(entity.Velocity);
         }
@@ -75,7 +73,6 @@ namespace Project.Steering
             dx /= len;
             dy /= len;
 
-            //try find walkable node in opposite direction
             for (int dist = FleeDistance; dist >= 2; dist--)
             {
                 int col = (int)Math.Round(entityNode.Col + dx * dist);
@@ -85,7 +82,6 @@ namespace Project.Steering
                     return node;
             }
 
-            //fallback
             NodeBase best = null;
             float bestDist = 0;
             for (int row = 0; row < DungeonMap.Rows; row++)
@@ -105,18 +101,5 @@ namespace Project.Steering
             return best;
         }
 
-        private static Vector2D SeekToward(MovingEntity entity, Vector2D target)
-        {
-            Vector2D desired = target.Clone().Sub(entity.Pos).Normalize().Multiply(entity.MaxSpeed);
-            return desired.Sub(entity.Velocity);
-        }
-
-        private static Vector2D NodeWorldPos(NodeBase node)
-        {
-            return new Vector2D(
-                (node.Col + 0.5f) * DungeonMap.TileSize,
-                (node.Row + 0.5f) * DungeonMap.TileSize
-            );
-        }
     }
 }

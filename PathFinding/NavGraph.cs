@@ -18,7 +18,6 @@ namespace Project.PathFinding
                 {
                     var node = Grid[row, col];
 
-                    // Cardinal neighbors
                     bool up = row > 0;
                     bool down = row < DungeonMap.Rows - 1;
                     bool left = col > 0;
@@ -29,7 +28,6 @@ namespace Project.PathFinding
                     if (left) node.Neighbors.Add(Grid[row, col - 1]);
                     if (right) node.Neighbors.Add(Grid[row, col + 1]);
 
-                    // Diagonal neighbors (only if both adjacent cardinal tiles are walkable to prevent corner-cutting)
                     if (up && left && Grid[row - 1, col].IsWalkable && Grid[row, col - 1].IsWalkable)
                         node.Neighbors.Add(Grid[row - 1, col - 1]);
                     if (up && right && Grid[row - 1, col].IsWalkable && Grid[row, col + 1].IsWalkable)

@@ -10,9 +10,6 @@ namespace Project.FuzzyLogic
         private readonly Dictionary<string, FuzzyVariable> _variables = new Dictionary<string, FuzzyVariable>();
         private readonly List<FuzzyRule> _rules = new List<FuzzyRule>();
 
-        public IReadOnlyDictionary<string, FuzzyVariable> Variables => _variables;
-        public IReadOnlyList<FuzzyRule> Rules => _rules;
-
         public void AddVariable(FuzzyVariable variable)
         {
             _variables[variable.Name] = variable;
@@ -112,7 +109,7 @@ namespace Project.FuzzyLogic
                             points[2].GetSingle()
                         );
                     }
-                    else // Trapezoid
+                    else
                     {
                         set = new TrapezoidFuzzySet(
                             setProp.Name,

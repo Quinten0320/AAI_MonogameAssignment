@@ -27,14 +27,13 @@ namespace Project.Steering
             var targetNode = _navGraph.GetNodeFromWorldPos(_target.X, _target.Y);
             var startNode = _navGraph.GetNodeFromWorldPos(entity.Pos.X, entity.Pos.Y);
 
-            //at end of path, target moved tile, or skeleton enters new tile
             if (_path == null || _pathIndex >= _path.Count || targetNode != _lastTargetNode || startNode != _lastStartNode)
             {
                 if (startNode != null && targetNode != null && startNode.IsWalkable && targetNode.IsWalkable)
                 {
                     _navGraph.ResetNodes();
                     _path = AStar.FindPath(startNode, targetNode);
-                    _pathIndex = 1; //skip start node
+                    _pathIndex = 1;
                     _lastTargetNode = targetNode;
                     _lastStartNode = startNode;
                 }
@@ -43,13 +42,13 @@ namespace Project.Steering
             if (_path != null && _pathIndex < _path.Count)
             {
                 while (_pathIndex < _path.Count &&
-                       entity.Pos.DistanceTo(NodeWorldPos(_path[_pathIndex])) < WaypointReachedDist)
+                       entity.Pos.DistanceTo(_path[_pathIndex].WorldPos) < WaypointReachedDist)
                 {
                     _pathIndex++;
                 }
 
                 if (_pathIndex < _path.Count)
-                    return SeekToward(entity, NodeWorldPos(_path[_pathIndex]));
+                    return SeekToward(entity, _path[_pathIndex].WorldPos);
             }
 
             return SeekToward(entity, _target);
@@ -57,19 +56,5 @@ namespace Project.Steering
 
         public override List<NodeBase> GetCurrentPath() => _path;
         public override int GetCurrentPathIndex() => _pathIndex;
-
-        private static Vector2D SeekToward(MovingEntity entity, Vector2D target)
-        {
-            Vector2D desired = target.Clone().Sub(entity.Pos).Normalize().Multiply(entity.MaxSpeed);
-            return desired.Sub(entity.Velocity);
-        }
-
-        private static Vector2D NodeWorldPos(NodeBase node)
-        {
-            return new Vector2D(
-                (node.Col + 0.5f) * DungeonMap.TileSize,
-                (node.Row + 0.5f) * DungeonMap.TileSize
-            );
-        }
     }
 }

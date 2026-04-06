@@ -16,33 +16,30 @@ namespace Project.Entities
         private const float DebugLineLength = 50f;
 
         public int HP { get; set; } = 100;
-        public Player Player { get; }
-        public DungeonMap Map { get; }
-
-        public ScriptedStateMachine ScriptedSM { get; }
-
-        public FuzzyEngine FuzzyEngine { get; }
         public float LastAggression { get; private set; }
 
-        public SteeringBehaviour CurrentSteering { get; set; }
-        public SeekBehaviour SeekBehaviour { get; }
-        public FleeBehaviour FleeBehaviour { get; }
-        public WanderBehaviour WanderBehaviour { get; }
+        private readonly Player _player;
+        private readonly DungeonMap _map;
+        private readonly ScriptedStateMachine _scriptedSM;
+        private readonly FuzzyEngine _fuzzyEngine;
+        private SteeringBehaviour _currentSteering;
+        private readonly SeekBehaviour _seekBehaviour;
+        private readonly FleeBehaviour _fleeBehaviour;
+        private readonly WanderBehaviour _wanderBehaviour;
+        private readonly HideBehaviour _hideBehaviour;
         private readonly ObstacleAvoidance _obstacleAvoidance;
-
         private readonly Dictionary<string, SteeringBehaviour> _steeringMap;
-
         private readonly Texture2D _texture;
         private readonly Texture2D _pixelTexture;
 
-        public Skeleton(Vector2D pos, GameWorld world, Player player, DungeonMap map, NavGraph navGraph,
+        public Skeleton(Vector2D pos, Player player, DungeonMap map, NavGraph navGraph,
             GraphicsDevice graphicsDevice, ScriptedStateMachine scriptedSM, FuzzyEngine fuzzyEngine)
-            : base(pos, world, maxSpeed: 120f, radius: 12f)
+            : base(pos, maxSpeed: 120f, radius: 12f)
         {
-            Player = player;
-            Map = map;
-            ScriptedSM = scriptedSM;
-            FuzzyEngine = fuzzyEngine;
+            _player = player;
+            _map = map;
+            _scriptedSM = scriptedSM;
+            _fuzzyEngine = fuzzyEngine;
 
             _texture = new Texture2D(graphicsDevice, 1, 1);
             _texture.SetData(new[] { new Color(160, 50, 200) });
@@ -50,16 +47,18 @@ namespace Project.Entities
             _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
             _pixelTexture.SetData(new[] { Color.White });
 
-            SeekBehaviour = new SeekBehaviour(player.Pos, navGraph);
-            FleeBehaviour = new FleeBehaviour(player.Pos, navGraph);
-            WanderBehaviour = new WanderBehaviour(navGraph);
+            _seekBehaviour = new SeekBehaviour(player.Pos, navGraph);
+            _fleeBehaviour = new FleeBehaviour(player.Pos, navGraph);
+            _wanderBehaviour = new WanderBehaviour(navGraph);
+            _hideBehaviour = new HideBehaviour(player.Pos, navGraph, map);
             _obstacleAvoidance = new ObstacleAvoidance(map);
 
             _steeringMap = new Dictionary<string, SteeringBehaviour>
             {
-                { "Seek", SeekBehaviour },
-                { "Flee", FleeBehaviour },
-                { "Wander", WanderBehaviour }
+                { "Seek", _seekBehaviour },
+                { "Flee", _fleeBehaviour },
+                { "Wander", _wanderBehaviour },
+                { "Hide", _hideBehaviour }
             };
 
             ApplyStateConfig();
@@ -77,22 +76,22 @@ namespace Project.Entities
 
         public override void Update(float deltaTime)
         {
-            float distance = Pos.DistanceTo(Player.Pos);
+            float distance = Pos.DistanceTo(_player.Pos);
             var inputs = new Dictionary<string, float>
             {
                 { "Distance", distance },
                 { "Health", HP }
             };
-            var fuzzyResult = FuzzyEngine.Evaluate(inputs);
+            var fuzzyResult = _fuzzyEngine.Evaluate(inputs);
             LastAggression = fuzzyResult.ContainsKey("Aggression") ? fuzzyResult["Aggression"] : 50f;
 
-            bool stateChanged = ScriptedSM.Update(LastAggression, distance);
+            bool stateChanged = _scriptedSM.Update(LastAggression, distance);
             if (stateChanged)
                 ApplyStateConfig();
 
-            if (CurrentSteering != null)
+            if (_currentSteering != null)
             {
-                Vector2D primaryForce = CurrentSteering.Calculate(this);
+                Vector2D primaryForce = _currentSteering.Calculate(this);
                 Vector2D avoidanceForce = _obstacleAvoidance.Calculate(this);
 
                 Vector2D totalForce = primaryForce.Add(avoidanceForce);
@@ -103,13 +102,13 @@ namespace Project.Entities
                 Velocity.Truncate(MaxSpeed);
 
                 float moveX = Velocity.X * deltaTime;
-                if (!Map.CollidesWithWall(Pos.X + moveX, Pos.Y, Radius))
+                if (!_map.CollidesWithWall(Pos.X + moveX, Pos.Y, Radius))
                     Pos.X += moveX;
                 else
                     Velocity.X = 0;
 
                 float moveY = Velocity.Y * deltaTime;
-                if (!Map.CollidesWithWall(Pos.X, Pos.Y + moveY, Radius))
+                if (!_map.CollidesWithWall(Pos.X, Pos.Y + moveY, Radius))
                     Pos.Y += moveY;
                 else
                     Velocity.Y = 0;
@@ -124,10 +123,10 @@ namespace Project.Entities
 
         private void ApplyStateConfig()
         {
-            var config = ScriptedSM.CurrentStateConfig;
+            var config = _scriptedSM.CurrentStateConfig;
             MaxSpeed = config.Speed;
             if (_steeringMap.TryGetValue(config.Steering, out var steering))
-                CurrentSteering = steering;
+                _currentSteering = steering;
         }
 
         public override void Render(SpriteBatch spriteBatch)
@@ -154,25 +153,20 @@ namespace Project.Entities
                 DebugDrawer.DrawLine(spriteBatch, Pos, end, Color.LimeGreen);
             }
 
-            if (CurrentSteering == null) return;
-            var path = CurrentSteering.GetCurrentPath();
-            int pathIndex = CurrentSteering.GetCurrentPathIndex();
+            if (_currentSteering == null) return;
+            var path = _currentSteering.GetCurrentPath();
+            int pathIndex = _currentSteering.GetCurrentPathIndex();
             if (path == null || pathIndex >= path.Count) return;
 
-            var firstWp = NodeWorldPos(path[pathIndex]);
-            DebugDrawer.DrawLine(spriteBatch, Pos, firstWp, Color.Red);
+            DebugDrawer.DrawLine(spriteBatch, Pos, path[pathIndex].WorldPos, Color.Red);
 
             for (int i = pathIndex; i < path.Count - 1; i++)
-            {
-                var from = NodeWorldPos(path[i]);
-                var to = NodeWorldPos(path[i + 1]);
-                DebugDrawer.DrawLine(spriteBatch, from, to, Color.Red);
-            }
+                DebugDrawer.DrawLine(spriteBatch, path[i].WorldPos, path[i + 1].WorldPos, Color.Red);
         }
 
         public void RenderDebugText(SpriteBatch spriteBatch, SpriteFont font)
         {
-            string stateName = ScriptedSM.CurrentStateName;
+            string stateName = _scriptedSM.CurrentStateName;
             string info = $"{stateName} A:{LastAggression:F0}";
 
             Vector2 textSize = font.MeasureString(info);
@@ -180,12 +174,5 @@ namespace Project.Entities
             spriteBatch.DrawString(font, info, textPos, Color.White);
         }
 
-        private static Vector2D NodeWorldPos(NodeBase node)
-        {
-            return new Vector2D(
-                (node.Col + 0.5f) * DungeonMap.TileSize,
-                (node.Row + 0.5f) * DungeonMap.TileSize
-            );
-        }
     }
 }

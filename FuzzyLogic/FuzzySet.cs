@@ -1,5 +1,3 @@
-using System;
-
 namespace Project.FuzzyLogic
 {
     public abstract class FuzzySet
@@ -34,7 +32,7 @@ namespace Project.FuzzyLogic
 
         public override float GetDOM(float value)
         {
-            if (value <= _left || value >= _right)
+            if (value < _left || value > _right)
                 return 0f;
             if (value == _peak)
                 return 1f;
@@ -64,7 +62,7 @@ namespace Project.FuzzyLogic
 
         public override float GetDOM(float value)
         {
-            if (value <= _left || value >= _right)
+            if (value < _left || value > _right)
                 return 0f;
             if (value >= _leftPeak && value <= _rightPeak)
                 return 1f;

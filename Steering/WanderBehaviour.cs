@@ -23,7 +23,6 @@ namespace Project.Steering
 
         public override Vector2D Calculate(MovingEntity entity)
         {
-            //random target when end of path
             if (_path == null || _pathIndex >= _path.Count)
             {
                 var startNode = _navGraph.GetNodeFromWorldPos(entity.Pos.X, entity.Pos.Y);
@@ -39,24 +38,22 @@ namespace Project.Steering
                 }
             }
 
-            //waypoints
             if (_path != null && _pathIndex < _path.Count)
             {
                 while (_pathIndex < _path.Count &&
-                       entity.Pos.DistanceTo(NodeWorldPos(_path[_pathIndex])) < WaypointReachedDist)
+                       entity.Pos.DistanceTo(_path[_pathIndex].WorldPos) < WaypointReachedDist)
                 {
                     _pathIndex++;
                 }
 
                 if (_pathIndex < _path.Count)
                 {
-                    var waypoint = NodeWorldPos(_path[_pathIndex]);
+                    var waypoint = _path[_pathIndex].WorldPos;
                     Vector2D desired = waypoint.Clone().Sub(entity.Pos).Normalize().Multiply(entity.MaxSpeed);
                     return desired.Sub(entity.Velocity);
                 }
             }
 
-            //slow down when no path or at destination
             return entity.Velocity.Clone().Multiply(-1);
         }
 
@@ -85,12 +82,5 @@ namespace Project.Steering
             return candidates[_random.Next(candidates.Count)];
         }
 
-        private static Vector2D NodeWorldPos(NodeBase node)
-        {
-            return new Vector2D(
-                (node.Col + 0.5f) * DungeonMap.TileSize,
-                (node.Row + 0.5f) * DungeonMap.TileSize
-            );
-        }
     }
 }

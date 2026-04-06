@@ -19,8 +19,8 @@ public class Player : BaseGameEntity
     private float _damageCooldown;
     private Vector2D _lastDirection = new Vector2D(0, -1);
 
-    public Player(Vector2D pos, GameWorld world, Texture2D sprite, DungeonMap map)
-        : base(pos, world)
+    public Player(Vector2D pos, Texture2D sprite, DungeonMap map)
+        : base(pos)
     {
         _sprite = sprite;
         _map = map;

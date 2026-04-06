@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AAI_MonogameAssignment;
 
 namespace Project.PathFinding
 {
@@ -6,6 +7,11 @@ namespace Project.PathFinding
     {
         public int Col { get; }
         public int Row { get; }
+
+        public Vector2D WorldPos => new Vector2D(
+            (Col + 0.5f) * DungeonMap.TileSize,
+            (Row + 0.5f) * DungeonMap.TileSize
+        );
         public bool IsWalkable { get; set; }
         public NodeBase Connection { get; private set; }
         public float G { get; private set; }

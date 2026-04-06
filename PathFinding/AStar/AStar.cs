@@ -68,7 +68,6 @@ namespace Project.PathFinding
         {
             int dx = Math.Abs(a.Col - b.Col);
             int dy = Math.Abs(a.Row - b.Row);
-            //octile distance (diagnoal movement)
             return Math.Max(dx, dy) + (1.41421356f - 1) * Math.Min(dx, dy);
         }
     }

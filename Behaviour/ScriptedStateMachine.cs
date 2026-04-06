@@ -26,7 +26,6 @@ namespace Project.Behaviour
 
         public string CurrentStateName { get; private set; }
         public StateConfig CurrentStateConfig => _states[CurrentStateName];
-        public float DetectionRange => _detectionRange;
 
         private ScriptedStateMachine(Dictionary<string, StateConfig> states, List<TransitionConfig> transitions,
             string initialState, float detectionRange)
