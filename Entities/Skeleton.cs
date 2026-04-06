@@ -31,6 +31,10 @@ namespace Project.Entities
         private readonly Dictionary<string, SteeringBehaviour> _steeringMap;
         private readonly Texture2D _sprite;
         private readonly Texture2D _pixelTexture;
+        private bool _dying;
+        private float _dyingTimer;
+        private const float DyingDuration = 1.5f;
+        public bool ReadyToSpawnGhost { get; private set; }
 
         public Skeleton(Vector2D pos, Player player, DungeonMap map, NavGraph navGraph,
             GraphicsDevice graphicsDevice, ScriptedStateMachine scriptedSM, FuzzyEngine fuzzyEngine, Texture2D sprite)
@@ -70,6 +74,10 @@ namespace Project.Entities
             {
                 HP = 0;
                 IsActive = false;
+                ReadyToSpawnGhost = true;
+
+                _dying = false;
+                _dyingTimer = 0f;
             }
         }
 
@@ -81,6 +89,18 @@ namespace Project.Entities
                 { "Distance", distance },
                 { "Health", HP }
             };
+
+            if (_dying)
+            {
+                _dyingTimer += deltaTime;
+                if (_dyingTimer >= DyingDuration)
+                {
+                    IsActive = false;
+                    ReadyToSpawnGhost = true;
+                }
+                return;
+            }
+
             var fuzzyResult = _fuzzyEngine.Evaluate(inputs);
             LastAggression = fuzzyResult.ContainsKey("Aggression") ? fuzzyResult["Aggression"] : 50f;
 
@@ -174,6 +194,8 @@ namespace Project.Entities
             Vector2 textPos = new Vector2(Pos.X - textSize.X / 2f, Pos.Y - Radius - 20);
             spriteBatch.DrawString(font, info, textPos, Color.White);
         }
+
+        public void ClearGhostFlag() => ReadyToSpawnGhost = false;
 
     }
 }
