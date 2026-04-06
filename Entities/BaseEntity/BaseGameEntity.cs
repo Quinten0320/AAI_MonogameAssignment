@@ -5,19 +5,13 @@ namespace Project.Entities.BaseEntity
 {
     public abstract class BaseGameEntity
     {
-        private static int _nextId = 0;
-
-        public int Id { get; private set; }
         public Vector2D Pos { get; set; }
         public float Radius { get; set; }
         public bool IsActive { get; set; } = true;
-        public GameWorld MyWorld { get; set; }
 
-        protected BaseGameEntity(Vector2D pos, GameWorld world, float radius = 16f)
+        protected BaseGameEntity(Vector2D pos, float radius = 16f)
         {
-            Id = _nextId++;
             Pos = pos;
-            MyWorld = world;
             Radius = radius;
         }
 
