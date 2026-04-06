@@ -22,6 +22,7 @@ namespace Project.Scenes
 
         private Texture2D _projectileTexture;
         private Texture2D _pixelTexture;
+        private Texture2D _skeletonTexture;
         private SpriteFont _font;
         private FuzzyEngine _fuzzyEngine;
         private int _currentRound;
@@ -60,6 +61,7 @@ namespace Project.Scenes
             _dungeonMap.LoadContent(graphicsDevice);
 
             var wizardTexture = Texture2D.FromFile(graphicsDevice, "ModelSprites/Wizard.png");
+            _skeletonTexture = Texture2D.FromFile(graphicsDevice, "ModelSprites/Skeleton.png");
             _navGraph = new NavGraph(_dungeonMap);
 
             _fuzzyEngine = FuzzyEngine.LoadFromJson("Config/fuzzy_config.json");
@@ -201,7 +203,7 @@ namespace Project.Scenes
                 var spawnPos = SpawnPoints[i % SpawnPoints.Length].Clone();
                 var sm = ScriptedStateMachine.LoadFromJson("Config/state_machine.json");
                 _skeletons.Add(new Skeleton(spawnPos, _player, _dungeonMap, _navGraph,
-                    _graphicsDevice, sm, _fuzzyEngine));
+                    _graphicsDevice, sm, _fuzzyEngine, _skeletonTexture));
             }
         }
 

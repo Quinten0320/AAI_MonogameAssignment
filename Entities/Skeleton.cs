@@ -29,11 +29,11 @@ namespace Project.Entities
         private readonly HideBehaviour _hideBehaviour;
         private readonly ObstacleAvoidance _obstacleAvoidance;
         private readonly Dictionary<string, SteeringBehaviour> _steeringMap;
-        private readonly Texture2D _texture;
+        private readonly Texture2D _sprite;
         private readonly Texture2D _pixelTexture;
 
         public Skeleton(Vector2D pos, Player player, DungeonMap map, NavGraph navGraph,
-            GraphicsDevice graphicsDevice, ScriptedStateMachine scriptedSM, FuzzyEngine fuzzyEngine)
+            GraphicsDevice graphicsDevice, ScriptedStateMachine scriptedSM, FuzzyEngine fuzzyEngine, Texture2D sprite)
             : base(pos, maxSpeed: 120f, radius: 12f)
         {
             _player = player;
@@ -41,8 +41,7 @@ namespace Project.Entities
             _scriptedSM = scriptedSM;
             _fuzzyEngine = fuzzyEngine;
 
-            _texture = new Texture2D(graphicsDevice, 1, 1);
-            _texture.SetData(new[] { new Color(160, 50, 200) });
+            _sprite = sprite;
 
             _pixelTexture = new Texture2D(graphicsDevice, 1, 1);
             _pixelTexture.SetData(new[] { Color.White });
@@ -131,14 +130,16 @@ namespace Project.Entities
 
         public override void Render(SpriteBatch spriteBatch)
         {
-            int size = (int)(Radius * 2);
-            var dest = new Rectangle((int)(Pos.X - Radius), (int)(Pos.Y - Radius), size, size);
-            spriteBatch.Draw(_texture, dest, Color.White);
+            float angle = (float)System.Math.Atan2(Direction.Y, Direction.X) + MathHelper.PiOver2;
+            var origin = new Vector2(_sprite.Width / 2f, _sprite.Height / 2f);
+            float scale = (Radius * 3f) / _sprite.Width;
 
-            int barWidth = size + 4;
+            spriteBatch.Draw(_sprite, Pos.ToXna(), null, Color.White, angle, origin, scale, SpriteEffects.None, 0f);
+
+            int barWidth = (int)(Radius * 4) + 4;
             int barHeight = 4;
             int barX = (int)(Pos.X - barWidth / 2f);
-            int barY = (int)(Pos.Y - Radius) - barHeight - 3;
+            int barY = (int)(Pos.Y - Radius * 2) - barHeight - 3;
             float hpRatio = HP / 100f;
 
             spriteBatch.Draw(_pixelTexture, new Rectangle(barX, barY, barWidth, barHeight), new Color(40, 40, 40));
