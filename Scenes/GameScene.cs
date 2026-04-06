@@ -234,6 +234,7 @@ namespace Project.Scenes
                 {
                     ghost.Collect();
                     _score += 50;
+                    _player.Heal(20);
                 }
             }
         }
@@ -261,7 +262,6 @@ namespace Project.Scenes
             }
             else if (_skeletons.TrueForAll(s => !s.IsActive))
             {
-                _player.HP = 100;
                 _score += _skeletons.Count * 10;
                 StartRound(_currentRound + 1);
             }
