@@ -10,7 +10,7 @@ namespace Project.Entities.BaseEntity
         public Vector2D Side { get; set; }
 
         public float MaxSpeed { get; set; }
-        public float MaxForce { get; set; }
+        public float MaxForce { get; set; } 
         public float Mass { get; set; }
 
         protected MovingEntity(Vector2D pos, float maxSpeed, float radius = 16, float mass = 1f)
