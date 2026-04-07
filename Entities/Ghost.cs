@@ -76,6 +76,8 @@ namespace Project.Entities
 
         public override void RenderDebug(SpriteBatch spriteBatch)
         {
+            _obstacleAvoidance.DrawFeelers(spriteBatch, this);
+
             if (!Velocity.IsZero())
             {
                 Vector2D end = Pos.Clone().Add(Velocity.Clone().Normalize().Multiply(DebugLineLength));

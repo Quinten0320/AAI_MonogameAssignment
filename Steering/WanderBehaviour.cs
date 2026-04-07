@@ -13,6 +13,7 @@ namespace Project.Steering
 
         private List<NodeBase> _path;
         private int _pathIndex;
+        private NodeBase _lastEntityNode;
         private const float WaypointReachedDist = 12f;
         private const int WanderRadius = 5;
 
@@ -23,9 +24,11 @@ namespace Project.Steering
 
         public override Vector2D Calculate(MovingEntity entity)
         {
-            if (_path == null || _pathIndex >= _path.Count)
+            var startNode = _navGraph.GetNodeFromWorldPos(entity.Pos.X, entity.Pos.Y);
+
+            if (_path == null || _pathIndex >= _path.Count || startNode != _lastEntityNode)
             {
-                var startNode = _navGraph.GetNodeFromWorldPos(entity.Pos.X, entity.Pos.Y);
+                _lastEntityNode = startNode;
                 if (startNode != null && startNode.IsWalkable)
                 {
                     var destination = PickRandomWalkableNode(startNode);

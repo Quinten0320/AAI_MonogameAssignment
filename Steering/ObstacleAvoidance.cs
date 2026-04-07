@@ -1,5 +1,7 @@
 using System;
 using AAI_MonogameAssignment;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Project.Entities.BaseEntity;
 
 namespace Project.Steering
@@ -29,6 +31,41 @@ namespace Project.Steering
             CheckFeeler(entity.Pos, new Vector2D(dir.X - side.X * 0.5f, dir.Y - side.Y * 0.5f).Normalize(), FeelerLength * 0.8f, force);
 
             return force;
+        }
+
+        public void DrawFeelers(SpriteBatch spriteBatch, MovingEntity entity)
+        {
+            if (entity.Velocity.IsZero()) return;
+
+            Vector2D dir = entity.Direction;
+            Vector2D side = entity.Side;
+
+            DrawFeeler(spriteBatch, entity.Pos, dir, FeelerLength);
+            DrawFeeler(spriteBatch, entity.Pos, new Vector2D(dir.X + side.X * 0.5f, dir.Y + side.Y * 0.5f).Normalize(), FeelerLength * 0.8f);
+            DrawFeeler(spriteBatch, entity.Pos, new Vector2D(dir.X - side.X * 0.5f, dir.Y - side.Y * 0.5f).Normalize(), FeelerLength * 0.8f);
+        }
+
+        private void DrawFeeler(SpriteBatch spriteBatch, Vector2D pos, Vector2D direction, float length)
+        {
+            bool hit = false;
+            for (float t = 0.5f; t <= 1f; t += 0.25f)
+            {
+                float checkX = pos.X + direction.X * length * t;
+                float checkY = pos.Y + direction.Y * length * t;
+                if (_map.CollidesWithWall(checkX, checkY, 2f))
+                {
+                    Vector2D hitPos = new Vector2D(checkX, checkY);
+                    DebugDrawer.DrawLine(spriteBatch, pos, hitPos, Color.Red);
+                    hit = true;
+                    break;
+                }
+            }
+
+            if (!hit)
+            {
+                Vector2D tip = new Vector2D(pos.X + direction.X * length, pos.Y + direction.Y * length);
+                DebugDrawer.DrawLine(spriteBatch, pos, tip, Color.Orange);
+            }
         }
 
         private void CheckFeeler(Vector2D pos, Vector2D direction, float length, Vector2D force)
