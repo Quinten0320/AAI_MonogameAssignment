@@ -12,7 +12,8 @@ public class Player : BaseGameEntity
     private const float Speed = 150f;
     private const float DebugLineLength = 50f;
     private const float DamageCooldownTime = 1f;
-    public int HP { get; set; } = 100;
+    public const int MaxHP = 100;
+    public int HP { get; set; } = MaxHP;
     private readonly Texture2D _sprite;
     private readonly DungeonMap _map;
     private float _rotation;
@@ -33,6 +34,12 @@ public class Player : BaseGameEntity
         if (HP < 0) HP = 0;
         _damageCooldown = DamageCooldownTime;
         return true;
+    }
+    public void Heal(int amount)
+    {
+        if (amount <= 0) return;
+        HP += amount;
+        if (HP > MaxHP) HP = MaxHP;
     }
 
     public override void Update(float delta)

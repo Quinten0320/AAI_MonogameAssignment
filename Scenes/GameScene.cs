@@ -19,9 +19,12 @@ namespace Project.Scenes
         private Player _player;
         private readonly List<Skeleton> _skeletons = new List<Skeleton>();
         private readonly List<Projectile> _projectiles = new List<Projectile>();
+        private readonly List<Ghost> _ghosts = new List<Ghost>();
 
         private Texture2D _projectileTexture;
         private Texture2D _pixelTexture;
+        private Texture2D _skeletonTexture;
+        private Texture2D _ghostTexture;
         private SpriteFont _font;
         private FuzzyEngine _fuzzyEngine;
         private int _currentRound;
@@ -29,6 +32,7 @@ namespace Project.Scenes
         private bool _showGraph;
         private KeyboardState _previousKeyState;
         private MouseState _previousMouseState;
+        private int _score;
 
         private Rectangle _pauseButton;
 
@@ -60,6 +64,8 @@ namespace Project.Scenes
             _dungeonMap.LoadContent(graphicsDevice);
 
             var wizardTexture = Texture2D.FromFile(graphicsDevice, "ModelSprites/Wizard.png");
+            _skeletonTexture = Texture2D.FromFile(graphicsDevice, "ModelSprites/Skeleton.png");
+            _ghostTexture = Texture2D.FromFile(graphicsDevice, "ModelSprites/Ghost.png");
             _navGraph = new NavGraph(_dungeonMap);
 
             _fuzzyEngine = FuzzyEngine.LoadFromJson("Config/fuzzy_config.json");
@@ -103,6 +109,10 @@ namespace Project.Scenes
                 if (skeleton.IsActive)
                     skeleton.Render(spriteBatch);
 
+            foreach (var ghost in _ghosts)
+                if (ghost.IsActive)
+                    ghost.Render(spriteBatch);
+
             foreach (var projectile in _projectiles)
                 if (projectile.IsActive)
                     projectile.Render(spriteBatch);
@@ -116,6 +126,14 @@ namespace Project.Scenes
                     skeleton.RenderDebug(spriteBatch);
                     skeleton.RenderDebugText(spriteBatch, _font);
                 }
+
+                foreach (var ghost in _ghosts)
+                {
+                    if (!ghost.IsActive) continue;
+                    ghost.RenderDebug(spriteBatch);
+                    ghost.RenderDebugText(spriteBatch, _font);
+                }
+
 
                 spriteBatch.DrawString(_font, "F1: Debug  F2: Graph", new Vector2(4, 4), Color.Gray);
             }
@@ -157,12 +175,33 @@ namespace Project.Scenes
             _player.Update(delta);
 
             foreach (var skeleton in _skeletons)
+            {
                 if (skeleton.IsActive)
+                {
                     skeleton.Update(delta);
+                }
+                else if (skeleton.ReadyToSpawnGhost)
+                {
+                    _ghosts.Add(new Ghost(
+                        skeleton.Pos.Clone(),
+                        _ghostTexture,
+                        _player.Pos,   
+                        _navGraph,
+                        _dungeonMap
+                    ));
+                    skeleton.ClearGhostFlag(); 
+                }
+            }
 
             foreach (var projectile in _projectiles)
                 if (projectile.IsActive)
                     projectile.Update(delta);
+
+            foreach (var ghost in _ghosts)
+                if (ghost.IsActive)
+                    ghost.Update(delta);
+
+            _ghosts.RemoveAll(g => !g.IsActive);
         }
 
         private void HandleCollisions()
@@ -188,6 +227,16 @@ namespace Project.Scenes
             }
 
             _projectiles.RemoveAll(p => !p.IsActive);
+
+            foreach (var ghost in _ghosts)
+            {
+                if (ghost.IsActive && ghost.Overlaps(_player))
+                {
+                    ghost.Collect();
+                    _score += 50;
+                    _player.Heal(20);
+                }
+            }
         }
 
         private void StartRound(int round)
@@ -201,7 +250,7 @@ namespace Project.Scenes
                 var spawnPos = SpawnPoints[i % SpawnPoints.Length].Clone();
                 var sm = ScriptedStateMachine.LoadFromJson("Config/state_machine.json");
                 _skeletons.Add(new Skeleton(spawnPos, _player, _dungeonMap, _navGraph,
-                    _graphicsDevice, sm, _fuzzyEngine));
+                    _graphicsDevice, sm, _fuzzyEngine, _skeletonTexture));
             }
         }
 
@@ -209,14 +258,11 @@ namespace Project.Scenes
         {
             if (_player.HP <= 0)
             {
-                _player.HP = 100;
-                _player.Pos.X = 1.5f * DungeonMap.TileSize;
-                _player.Pos.Y = 1.5f * DungeonMap.TileSize;
-                StartRound(1);
+                _game.ChangeScene(new EndScene(_score));
             }
             else if (_skeletons.TrueForAll(s => !s.IsActive))
             {
-                _player.HP = 100;
+                _score += _skeletons.Count * 10;
                 StartRound(_currentRound + 1);
             }
         }
@@ -274,6 +320,13 @@ namespace Project.Scenes
 
         private void DrawHUD(SpriteBatch spriteBatch)
         {
+            string scoreText = $"Score: {_score}";
+
+            Vector2 scoreSize = _font.MeasureString(scoreText);
+            Vector2 scorePosition = new Vector2((_graphicsDevice.Viewport.Width - scoreSize.X) / 2,8);
+
+            spriteBatch.DrawString(_font, scoreText, scorePosition, Color.Gold);
+
             int barWidth = 200;
             int barHeight = 16;
             int barX = (_graphicsDevice.Viewport.Width - barWidth) / 2;

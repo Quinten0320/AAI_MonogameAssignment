@@ -1,6 +1,6 @@
 {
   "initialState": "Wander",
-  "detectionRange": 160,
+  "detectionRange": 200,
   "states": {
     "Wander": { "steering": "Wander", "speed": 50 },
     "Seek":   { "steering": "Seek",   "speed": 120 },
